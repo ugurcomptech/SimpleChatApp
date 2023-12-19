@@ -1,26 +1,27 @@
-# SimpleChatApp
+Bu proje, basit bir soket tabanlı sohbet uygulamasını içerir. Bir sunucu ve bir veya daha fazla istemci arasında mesaj alışverişi yapabilirsiniz.
 
-SimpleChat, Python kullanılarak geliştirilmekte olan basit bir mesajlaşma uygulamasıdır.
+## İstemci (Client)
 
-## Geliştirme Aşamasında
+- `client.py` dosyası, istemci tarafını temsil eder.
+- Sunucuya bağlanır, kullanıcı adını gönderir ve ardından gelen mesajları dinler.
+- Çıkış yapmak için "exit" komutunu kullanabilirsiniz.
 
-Bu proje hala geliştirme aşamasındadır ve üzerinde çalışmaya devam edilmektedir.
+## Sunucu (Server)
+
+- `server.py` dosyası, sunucu tarafını temsil eder.
+- Kullanıcıları takip eder, gelen mesajları diğer kullanıcılara ileterek bir sohbet odası oluşturur.
 
 ## Kullanım
 
-### Sunucu
+1. `server.py` dosyasını başlatarak sunucuyu başlatın.
+2. `client.py` dosyasını başlatarak istemciyi sunucuya bağlayın.
+3. Kullanıcı adınızı girin ve sohbetin tadını çıkarın.
 
-Sunucuyu başlatmak için `server.py` dosyasını çalıştırın.
+## Notlar
 
-```bash
-python server.py
-```
+- Bu proje hala geliştirme aşamasındadır ve iyileştirmeler içerebilir.
+- İletişim hatası durumunda bağlantıyı kontrol etmek önemlidir.
 
-### İstemci
+## Katkıda Bulunma
 
-İstemciyi başlatmak için client.py dosyasını çalıştırın. İstemci otomatik olarak sunucuya bağlanacaktır.
-
-```bash
-python client.py
-```
-
+Eğer bu projeye katkıda bulunmak istiyorsanız, lütfen bir çekme isteği (pull request) gönderin veya bir sorun (issue) açın.
