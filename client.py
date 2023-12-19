@@ -1,5 +1,4 @@
 import socket
-import sys
 import threading
 
 def create_client_socket():
@@ -14,36 +13,39 @@ def connect_to_server(client_socket, host, port):
         print(f"Sunucuya bağlandı: {host}:{port}")
     except socket.error as e:
         print(f"Bağlantı hatası: {e}")
-        sys.exit()
+        exit()
 
-def send_message(client_socket, message):
-    # Mesajı gönder
-    client_socket.send(message.encode())
+def get_user_credentials():
+    # Kullanıcı adını al
+    username = input("Kullanıcı Adı: ")
+    return username
 
-def receive_response(client_socket):
-    # Sunucudan gelen yanıtı al ve ekrana yazdır
-    while True:
-        data = client_socket.recv(1024).decode()
-        if not data:
-            break
-        print(f"Alınan Yanıt: {data}")
-
-def close_connection(client_socket):
-    # Bağlantıyı kapat
-    client_socket.close()
-    print("Bağlantı kapatıldı.")
-    sys.exit()
+def receive_messages(client_socket):
+    try:
+        while True:
+            message = client_socket.recv(1024).decode()
+            if not message:
+                break
+            print(f"\nAlınan Mesaj: {message}\nGönderilecek Mesaj (exit yazarak çıkış yapabilirsiniz): ", end="")
+    except Exception as e:
+        print(f"Hata (alınan mesajlar): {e}")
+    finally:
+        client_socket.close()
 
 def main():
     # Sunucu IP adresi ve port numarasını belirle
-    host = '0.0.0.0'  # Sunucu IP adresi
+    host = '192.168.1.107'  # Sunucu IP adresi
     port = 12345
 
     client_socket = create_client_socket()
     connect_to_server(client_socket, host, port)
 
-    # Sunucudan gelen mesajları dinleme işlemi için bir thread başlat
-    receive_thread = threading.Thread(target=receive_response, args=(client_socket,))
+    # Kullanıcı adını sunucuya gönder
+    username = get_user_credentials()
+    client_socket.send(username.encode())
+
+    # Sunucudan gelen mesajları dinleme işlemi için yeni bir thread başlat
+    receive_thread = threading.Thread(target=receive_messages, args=(client_socket,))
     receive_thread.start()
 
     while True:
@@ -51,10 +53,11 @@ def main():
         message = input("Gönderilecek Mesaj (exit yazarak çıkış yapabilirsiniz): ")
 
         if message.lower() == 'exit':
-            close_connection(client_socket)
+            client_socket.close()
+            exit()
 
-        # Mesaj gönderme
-        send_message(client_socket, message)
+        # Mesajı gönder
+        client_socket.send(message.encode())
 
 if __name__ == "__main__":
     main()
