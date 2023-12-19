@@ -1,3 +1,5 @@
+## Simple Chat APp
+
 Bu proje, basit bir soket tabanlı sohbet uygulamasını içerir. Bir sunucu ve bir veya daha fazla istemci arasında mesaj alışverişi yapabilirsiniz.
 
 ## İstemci (Client)
