@@ -1,42 +1,60 @@
 import socket
 import threading
 
-# Sunucu soketini oluştur
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+users = {}  # Kullanıcıları saklamak için sözlük: {username: client_socket}
 
-# Sunucu IP adresi ve port numarasını belirle
-host = '0.0.0.0'  # Tüm ağ arayüzlerine açık olacak şekilde
-port = 12345
+def handle_client(client_socket, username):
+    try:
+        while True:
+            message = client_socket.recv(1024).decode()
+            if not message:
+                break
+            print(f"Alınan Mesaj ({username}): {message}")
+            
+            # Sunucuya gelen mesajları diğer kullanıcılara iletme (broadcast)
+            broadcast_message = f"({username}): {message}"
+            broadcast_to_all(broadcast_message, client_socket)
+    except Exception as e:
+        print(f"Hata: {e}")
+    finally:
+        remove_user(username, client_socket)
 
-# Sunucu soketini belirtilen IP ve port numarasına bağla
-server_socket.bind((host, port))
+def broadcast_to_all(message, sender_socket):
+    for user, client in users.items():
+        if client != sender_socket:
+            try:
+                client.send(message.encode())
+            except Exception as e:
+                print(f"Hata (broadcast): {e}")
 
-# Bağlantıları dinle
-server_socket.listen()
+def remove_user(username, client_socket):
+    if username in users:
+        del users[username]
+        print(f"{username} bağlantısı kapatıldı.")
+        broadcast_to_all(f"{username} ayrıldı.", client_socket)
 
-print(f"Sunucu {host}:{port} üzerinde dinleniyor...")
+def main():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(('192.168.1.107', 12345))
+    server_socket.listen(5)
+    print("Sunucu dinleme başladı...")
 
-# Bağlı istemci bilgilerini tutmak için bir sözlük
-clients = {}
-
-def handle_client(client_socket, client_address):
     while True:
-        # İstemciden gelen veriyi al
-        data = client_socket.recv(1024).decode()
+        client_socket, addr = server_socket.accept()
+        print(f"Yeni bağlantı: {addr}")
 
-        # İstemciden gelen veriyi diğer istemcilere ileti
-        for other_client_socket in clients.values():
-            if other_client_socket != client_socket:
-                other_client_socket.send(f"{client_address}: {data}".encode())
+        # Kullanıcı adını iste
+        client_socket.send("Kullanıcı adınızı girin: ".encode())
+        username = client_socket.recv(1024).decode()
 
-# İstemci bağlantılarını kabul et ve her biri için bir iş parçacığı başlat
-while True:
-    client_socket, client_address = server_socket.accept()
-    print(f"{client_address} bağlandı.")
+        # Kullanıcıyı ekleyerek sohbet başlat
+        users[username] = client_socket
+        print(f"{username} katıldı.")
+        broadcast_to_all(f"{username} katıldı.", client_socket)
 
-    # Yeni bir iş parçacığı başlat ve istemci bağlantısını işlemek üzere fonksiyona yönlendir
-    client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
-    client_thread.start()
+        # Kullanıcıya gelen mesajları dinleme işlemi için yeni bir thread başlat
+        client_thread = threading.Thread(target=handle_client, args=(client_socket, username))
+        client_thread.start()
 
-    # Bağlı istemcileri takip etmek için sözlüğe ekle
-    clients[client_socket] = client_socket
+if __name__ == "__main__":
+    main()
