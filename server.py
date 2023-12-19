@@ -31,11 +31,11 @@ def remove_user(username, client_socket):
     if username in users:
         del users[username]
         print(f"{username} bağlantısı kapatıldı.")
-        broadcast_to_all(f"{username} ayrıldı.", client_socket)
+        # broadcast_to_all(f"{username} ayrıldı.", client_socket)
 
 def main():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(('192.168.1.107', 12345))
+    server_socket.bind(('0.0.0.0', 12345))
     server_socket.listen(5)
     print("Sunucu dinleme başladı...")
 
@@ -43,18 +43,16 @@ def main():
         client_socket, addr = server_socket.accept()
         print(f"Yeni bağlantı: {addr}")
 
-        # Kullanıcı adını iste
-        client_socket.send("Kullanıcı adınızı girin: ".encode())
-        username = client_socket.recv(1024).decode()
+        # Kullanıcı adını bir kez iste
+        if addr[0] not in users:  # Kullanıcı daha önce bağlanmamışsa
+            client_socket.send("Kullanıcı adınızı girin: ".encode())
+            username = client_socket.recv(1024).decode()
+            users[username] = client_socket
+            print(f"{username} katıldı.")
 
-        # Kullanıcıyı ekleyerek sohbet başlat
-        users[username] = client_socket
-        print(f"{username} katıldı.")
-        broadcast_to_all(f"{username} katıldı.", client_socket)
-
-        # Kullanıcıya gelen mesajları dinleme işlemi için yeni bir thread başlat
-        client_thread = threading.Thread(target=handle_client, args=(client_socket, username))
-        client_thread.start()
+            # Kullanıcıya gelen mesajları dinleme işlemi için yeni bir thread başlat
+            client_thread = threading.Thread(target=handle_client, args=(client_socket, username))
+            client_thread.start()
 
 if __name__ == "__main__":
     main()
