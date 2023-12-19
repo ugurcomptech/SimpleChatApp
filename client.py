@@ -34,7 +34,7 @@ def receive_messages(client_socket):
 
 def main():
     # Sunucu IP adresi ve port numarasını belirle
-    host = '192.168.1.107'  # Sunucu IP adresi
+    host = '0.0.0.0'  # Sunucu IP adresi
     port = 12345
 
     client_socket = create_client_socket()
