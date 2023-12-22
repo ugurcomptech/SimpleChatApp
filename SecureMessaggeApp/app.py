@@ -3,13 +3,11 @@ import socket
 import threading
 
 def create_client_socket():
-    # İstemci soketi oluştur
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     return client_socket
 
 def connect_to_server(client_socket, host, port):
     try:
-        # Sunucuya bağlan
         client_socket.connect((host, port))
         print(f"Sunucuya bağlandı: {host}:{port}")
     except socket.error as e:
@@ -17,14 +15,16 @@ def connect_to_server(client_socket, host, port):
         exit()
 
 def get_user_credentials():
-    # Kullanıcı adını al
     username = input("Kullanıcı Adı: ")
     return username
+
+def get_room_name():
+    room_name = input("Oda Adı: ")
+    return room_name
 
 def receive_messages(client_socket):
     try:
         while True:
-            # Şifreli mesajı al, çöz ve ekrana yazdır
             encrypted_message = client_socket.recv(1024).decode()
             if not encrypted_message:
                 break
@@ -36,13 +36,11 @@ def receive_messages(client_socket):
         client_socket.close()
 
 def encrypt_message(message):
-    # Basit bir Caesar şifreleme uygula
     key = 3
     encrypted_message = ''.join([chr((ord(char) + key)) for char in message])
     return encrypted_message
 
 def decrypt_message(encrypted_message):
-    # Basit bir Caesar şifre çözme uygula
     key = 3
     decrypted_message = ''.join([chr((ord(char) - key)) for char in encrypted_message])
     return decrypted_message
@@ -55,13 +53,15 @@ def main():
     connect_to_server(client_socket, host, port)
 
     username = get_user_credentials()
+    room_name = get_room_name()
+
     client_socket.send(username.encode())
+    client_socket.send(room_name.encode())
 
     receive_thread = threading.Thread(target=receive_messages, args=(client_socket,))
     receive_thread.start()
 
     while True:
-        # Kullanıcının mesajını al, şifrele ve sunucuya gönder
         message = input("Mesaj Gönder (çıkmak için 'exit' yazın): ")
 
         if message.lower() == 'exit':
