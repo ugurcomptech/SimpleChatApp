@@ -3,42 +3,46 @@ import socket
 import threading
 
 def create_client_socket():
+    # İstemci soketi oluştur
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     return client_socket
 
 def connect_to_server(client_socket, host, port):
     try:
+        # Sunucuya bağlan
         client_socket.connect((host, port))
-        print(f"Connected to the server: {host}:{port}")
+        print(f"Sunucuya bağlandı: {host}:{port}")
     except socket.error as e:
-        print(f"Connection error: {e}")
+        print(f"Bağlantı hatası: {e}")
         exit()
 
 def get_user_credentials():
-    username = input("Username: ")
+    # Kullanıcı adını al
+    username = input("Kullanıcı Adı: ")
     return username
 
 def receive_messages(client_socket):
     try:
         while True:
+            # Şifreli mesajı al, çöz ve ekrana yazdır
             encrypted_message = client_socket.recv(1024).decode()
             if not encrypted_message:
                 break
             decrypted_message = decrypt_message(encrypted_message)
-            print(f"\nReceived Message: {decrypted_message}\nSend Message (type 'exit' to quit): ", end="")
+            print(f"\nAlınan Mesaj: {decrypted_message}\nMesaj Gönder (çıkmak için 'exit' yazın): ", end="")
     except Exception as e:
-        print(f"Error (receiving messages): {e}")
+        print(f"Hata (mesajları alma): {e}")
     finally:
         client_socket.close()
 
 def encrypt_message(message):
-    # Simple Caesar cipher encryption
+    # Basit bir Caesar şifreleme uygula
     key = 3
     encrypted_message = ''.join([chr((ord(char) + key)) for char in message])
     return encrypted_message
 
 def decrypt_message(encrypted_message):
-    # Simple Caesar cipher decryption
+    # Basit bir Caesar şifre çözme uygula
     key = 3
     decrypted_message = ''.join([chr((ord(char) - key)) for char in encrypted_message])
     return decrypted_message
@@ -57,7 +61,8 @@ def main():
     receive_thread.start()
 
     while True:
-        message = input("Send Message (type 'exit' to quit): ")
+        # Kullanıcının mesajını al, şifrele ve sunucuya gönder
+        message = input("Mesaj Gönder (çıkmak için 'exit' yazın): ")
 
         if message.lower() == 'exit':
             client_socket.close()
