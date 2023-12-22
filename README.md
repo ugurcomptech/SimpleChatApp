@@ -2,6 +2,12 @@
 
 Bu proje, basit bir soket tabanlı sohbet uygulamasını içerir. Bir sunucu ve bir veya daha fazla istemci arasında mesaj alışverişi yapabilirsiniz.
 
+## Security
+
+Güvenlik kısmı hala geliştirme aşamasındadır. Şuan server tarafında mesajlar encrypt ve decrypt şekilde gözükmekte. İstemci tarafına ise şifre çözülü şekilde geliyor.
+**SecureMessageApp** kısmında indirip kullanabilirsiniz, geliştirmeler hala devam etmektedir.
+
+
 ## İstemci (Client)
 
 - `client.py` dosyası, istemci tarafını temsil eder.
