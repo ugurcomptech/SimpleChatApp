@@ -8,6 +8,20 @@ Güvenlik kısmı hala geliştirme aşamasındadır. Şuan server tarafında mes
 **SecureMessageApp** kısmında indirip kullanabilirsiniz, geliştirmeler hala devam etmektedir.
 
 
+## Chat Odaları
+
+İnsanlar farklı odalarda konuşabilmesi adına yeni bir özellik getirildi bu konuda hala geliştirmeler devam ediyor. 
+
+### Farklı odalar olduğu durumda gördüğünüz gibi mesajlar gözükmüyor.
+
+![image](https://github.com/ugurcomptech/SimpleChatApp/assets/133202238/6d4305b0-9b54-4b59-b174-9d8bb54057a4)
+
+### Sohbet odaları aynı olduğu durumda bir sorun olmadan mesajlaşılabiliyor.
+
+![image](https://github.com/ugurcomptech/SimpleChatApp/assets/133202238/0a38c96b-ad21-4bbe-a54d-95549faa4221)
+
+
+
 ## İstemci (Client)
 
 - `client.py` dosyası, istemci tarafını temsil eder.
