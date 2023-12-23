@@ -14,7 +14,7 @@ Güvenlik kısmı hala geliştirme aşamasındadır. Şuan server tarafında mes
 
 ### Farklı odalar olduğu durumda gördüğünüz gibi mesajlar gözükmüyor.
 
-![image](https://github.com/ugurcomptech/SimpleChatApp/assets/133202238/6d4305b0-9b54-4b59-b174-9d8bb54057a4)
+![image](https://github.com/ugurcomptech/SimpleChatApp/assets/133202238/be8ba83e-6e19-457d-9cca-124493505883)
 
 ### Sohbet odaları aynı olduğu durumda bir sorun olmadan mesajlaşılabiliyor.
 
