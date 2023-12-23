@@ -2,78 +2,117 @@
 import socket
 import threading
 
-# Kullanıcıları depolamak için bir sözlük
+# Kullanıcıları ve odaları depolamak için sözlükler
 users = {}
+rooms = {}
 
-def handle_client(client_socket, username):
-    try:
-        while True:
-            # Şifreli mesajı al, çöz ve ekrana yazdır
-            encrypted_message = client_socket.recv(1024).decode()
-            if not encrypted_message:
-                break
-            print(f"Şifreli Mesaj Alındı ({username}): {encrypted_message}")
+def create_room(room_name):
+    """
+    Belirli bir isme sahip yeni bir oda oluşturur.
+    """
+    rooms[room_name] = set()
 
-            decrypted_message = decrypt_message(encrypted_message)
-            print(f"Çözülmüş Mesaj ({username}): {decrypted_message}")
+def join_room(username, room_name):
+    """
+    Kullanıcıyı belirli bir odaya ekler.
+    """
+    rooms[room_name].add(username)
 
-            # Yayınlanacak mesajı oluştur ve tüm kullanıcılara gönder
-            broadcast_message = f"({username}): {decrypted_message}"
-            broadcast_to_all(broadcast_message, client_socket)
-    except Exception as e:
-        print(f"Hata: {e}")
-    finally:
-        # Kullanıcıyı kaldır
-        remove_user(username, client_socket)
+def leave_room(username, room_name):
+    """
+    Kullanıcıyı belirli bir odadan çıkarır.
+    """
+    rooms[room_name].remove(username)
 
-def broadcast_to_all(message, sender_socket):
-    # Tüm kullanıcılara mesajı gönder
-    for user, client in users.items():
-        if client != sender_socket:
-            try:
-                client.send(encrypt_message(message).encode())
-            except Exception as e:
-                print(f"Hata (yayın): {e}")
+def decrypt_message(encrypted_message):
+    """
+    Şifreli mesajı çözer.
+    """
+    key = 3
+    decrypted_message = ''.join([chr((ord(char) - key)) for char in encrypted_message])
+    return decrypted_message
 
 def remove_user(username, client_socket):
-    # Kullanıcıyı kaldır
+    """
+    Kullanıcıyı sistemden kaldırır.
+    """
     if username in users:
         del users[username]
         print(f"{username} bağlantısı kapatıldı.")
 
 def encrypt_message(message):
-    # Basit bir Caesar şifreleme uygula
+    """
+    Mesajı şifreler.
+    """
     key = 3
     encrypted_message = ''.join([chr((ord(char) + key)) for char in message])
     return encrypted_message
 
-def decrypt_message(encrypted_message):
-    # Basit bir Caesar şifre çözme uygula
-    key = 3
-    decrypted_message = ''.join([chr((ord(char) - key)) for char in encrypted_message])
-    return decrypted_message
+def handle_client(client_socket, username, room_name):
+    """
+    İstemciden gelen mesajları işler.
+    """
+    try:
+        while True:
+            encrypted_message = client_socket.recv(1024).decode()
+            if not encrypted_message:
+                break
+
+            decrypted_message = decrypt_message(encrypted_message)
+            print(f"Şifreli Mesaj ({username} - {room_name}): {encrypted_message}")
+            print(f"Çözülmüş Mesaj ({username} - {room_name}): {decrypted_message}")
+
+            broadcast_message = f"({username}): {decrypted_message}"
+            broadcast_to_room(broadcast_message, room_name, client_socket)
+    except Exception as e:
+        print(f"Hata: {e}")
+    finally:
+        remove_user(username, client_socket)
+        leave_room(username, room_name)
+
+def broadcast_to_room(message, room_name, sender_socket):
+    """
+    Belirli bir odadaki tüm kullanıcılara mesajı gönderir.
+    """
+    if room_name in rooms:
+        for user in rooms[room_name]:
+            client = users[user]
+            if client != sender_socket:
+                try:
+                    client.send(encrypt_message(message).encode())
+                except Exception as e:
+                    print(f"Hata (yayın): {e}")
 
 def main():
-    # Sunucu soketi oluştur ve belirtilen IP adresi ve port numarasında dinle
+    """
+    Sunucu başlatma ve istemci bağlantılarını kabul etme.
+    """
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('192.168.1.110', 12345))
     server_socket.listen(5)
     print("Sunucu dinleniyor...")
 
     while True:
-        # Yeni bir istemci bağlantısı kabul et
         client_socket, addr = server_socket.accept()
         print(f"Yeni bağlantı: {addr}")
 
-        # Eğer IP adresi daha önce kaydedilmemişse kullanıcı adını iste ve kaydet
-        if addr[0] not in users:
-            client_socket.send("Kullanıcı adınızı girin: ".encode())
-            username = client_socket.recv(1024).decode()
-            users[username] = client_socket
-            print(f"{username} katıldı.")
+        client_socket.send("Kullanıcı adınızı girin: ".encode())
+        username = client_socket.recv(1024).decode()
 
-            # Her bir kullanıcı için ayrı bir iş parçacığı oluştur
-            client_thread = threading.Thread(target=handle_client, args=(client_socket, username))
+        # Eğer IP adresi daha önce kaydedilmemişse kullanıcı adını ve oda adını iste ve kaydet
+        if username not in users:
+            client_socket.send("Oda adınızı girin: ".encode())
+            room_name = client_socket.recv(1024).decode()
+            
+            # Eğer oda daha önce oluşturulmamışsa, yeni bir oda oluştur
+            if room_name not in rooms:
+                create_room(room_name)
+
+            users[username] = client_socket
+            join_room(username, room_name)
+            print(f"{username} kullanıcısı {room_name} odasına katıldı.")
+
+            client_thread = threading.Thread(target=handle_client, args=(client_socket, username, room_name))
             client_thread.start()
 
 if __name__ == "__main__":
